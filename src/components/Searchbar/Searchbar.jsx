@@ -1,26 +1,26 @@
-import React, { Component } from 'react';
+// import React, { Component } from 'react';
 import css from './Searchbar.module.css';
+import { useState } from 'react';
 
-export class Searchbar extends Component {
-  state = {
-    value: '',
+export function Searchbar ({onSubmit}) {
+  const [value, setValue] = useState('');
+
+  const handleChange = e => {
+    setValue(e.target.value);
   };
-  handleChange = e => {
-    this.setState({ value: e.target.value });
-  };
-  handleSubmit = e => {
+  const handleSubmit = e => {
     e.preventDefault();
-    if (!this.state.value.trim()) {
+    if (!value.trim()) {
       alert('Enter a word for search!');
       return;
     }
-    this.props.onSubmit(this.state.value);
-    this.setState({ value: '' });
+    onSubmit(value);
+    setValue('');
   };
-  render() {
+  
     return (
       <header className={css.searchbar}>
-        <form className={css.searchForm} onSubmit={this.handleSubmit}>
+        <form className={css.searchForm} onSubmit={handleSubmit}>
           <button type="submit" className={css.searchFormButton}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -42,8 +42,8 @@ export class Searchbar extends Component {
           <input
             className={css.searchFormInput}
             type="text"
-            value={this.state.value}
-            onChange={this.handleChange}
+            value={value}
+            onChange={handleChange}
             autoComplete="off"
             autoFocus
             placeholder="Search images and photos"
@@ -52,4 +52,4 @@ export class Searchbar extends Component {
       </header>
     );
   }
-}
+
