@@ -1,35 +1,35 @@
-import React, { Component } from 'react';
+// import React, { Component } from 'react';
 import css from './Modal.module.css';
+import { useEffect } from 'react';
 
-export class Modal extends Component {
+export function Modal({ largeImageURL, onClose }) {
   // слухач подій на keydown, для закриття модалки по Esc
-  componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyDown);
-  }
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
-  }
-  handleKeyDown = e => {
-    if (e.code === 'Escape') {
-      this.props.onClose();
-    }
-  };
-  render() {
-    const { onClose, largeImageURL } = this.props;
 
-    return (
-      <div
-        className={css.overlay}
-        onClick={e => {
-          if (e.target === e.currentTarget) {
-            onClose();
-          }
-        }}
-      >
-        <div className={css.modal} onClick={e => e.stopPropagation()}>
-          <img src={largeImageURL} alt="" />
-        </div>
+  useEffect(() => {
+    const handleKeyDown = event => {
+      if (event.code === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    // cleanup як componentWillUnmount
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className={css.overlay}
+      onClick={e => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className={css.modal} onClick={e => e.stopPropagation()}>
+        <img src={largeImageURL} alt="" />
       </div>
-    );
-  }
+    </div>
+  );
 }

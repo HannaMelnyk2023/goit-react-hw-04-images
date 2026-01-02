@@ -1,10 +1,9 @@
-import React, { Component } from 'react';
+// import React, { Component } from 'react';
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
 import css from './ImageGallery.module.css';
 
-export class ImageGallery extends Component {
-  render() {
-    const { images, onImageClick } = this.props;
+export function ImageGallery({ images, onImageClick }) {
+
     return (
       <ul className={css.gallery}>
         {images.map(image => (
@@ -18,4 +17,4 @@ export class ImageGallery extends Component {
       </ul>
     );
   }
-}
+
