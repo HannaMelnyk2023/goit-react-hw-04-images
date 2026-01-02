@@ -1,85 +1,74 @@
-import React, { Component } from 'react';
+// import React, { Component } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
 import { Modal } from './Modal/Modal';
 import './App.css';
+import { useState } from 'react';
+import { useEffect } from 'react';
 
 const API_KEY = '52609803-933344cf37d0c6144f6fe0bf2';
 
-export class App extends Component {
-  state = {
-    images: [],
-    query: '',
-    page: 1,
-    isLoading: false,
-    largeImageURL: null,
-    // додаємо властивість загальної кількості співпадінь:
-    totalHits: 0,
+export function App() {
+  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState(null);
+  const [totalHits, setTotalHits] = useState(0);
+
+  useEffect(() => {
+    if (!query) return;
+
+    const fetchImages = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `https://pixabay.com/api/?q=${query}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
+        );
+        const data = await response.json();
+        setImages(prevImages => [...prevImages, ...data.hits]);
+
+        setTotalHits(data.totalHits);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchImages();
+  }, [query, page]);
+
+  const handleSearchSubmit = newQuery => {
+    setQuery(newQuery);
+    setPage(1);
+    setImages([]);
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.fetchImage();
-    }
-  }
-  fetchImage = () => {
-    const { query, page } = this.state;
-    this.setState({ isLoading: true });
-    fetch(
-      `https://pixabay.com/api/?q=${query}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
-    )
-      .then(res => res.json())
-      .then(data => {
-        // console.log(data)
-        this.setState(prev => ({
-          images: [...prev.images, ...data.hits],
-          totalHits: data.totalHits,
-        }));
-      })
-      .finally(() => {
-        this.setState({
-          isLoading: false,
-        });
-      });
-  };
-  handleSearchSubmit = query => {
-    this.setState({
-      query,
-      page: 1,
-      images: [],
-    });
-  };
-  loadMore = () => {
-    this.setState(prev => ({
-      page: prev.page + 1,
-    }));
-  };
-  openModal = largeImageURL => {
-    this.setState({ largeImageURL });
+  const loadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  closeModal = () => {
-    this.setState({ largeImageURL: null });
+  const openModal = url => {
+    setLargeImageURL(url);
   };
 
-  render() {
-    const { images, isLoading, largeImageURL, totalHits} = this.state;
+  const closeModal = () => {
+    setLargeImageURL(null);
+  };
 
-    return (
-      <>
-        <Searchbar onSubmit={this.handleSearchSubmit} />
-        <ImageGallery images={images} onImageClick={this.openModal} />
-        {isLoading && <Loader />}
-        {images.length > 0 && images.length < totalHits && !isLoading && <Button onClick={this.loadMore} />}
-        {largeImageURL && (
-          <Modal largeImageURL={largeImageURL} onClose={this.closeModal} />
-        )}
-      </>
-    );
-  }
+  return (
+    <>
+      <Searchbar onSubmit={handleSearchSubmit} />
+      <ImageGallery images={images} onImageClick={openModal} />
+      {isLoading && <Loader />}
+      {images.length > 0 && images.length < totalHits && !isLoading && (
+        <Button onClick={loadMore} />
+      )}
+      {largeImageURL && (
+        <Modal largeImageURL={largeImageURL} onClose={closeModal} />
+      )}
+    </>
+  );
 }
